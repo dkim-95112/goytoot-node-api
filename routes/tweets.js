@@ -14,21 +14,35 @@ client.connect(err => {
     console.log("Connected successfully to server");
     db = client.db(dbName);
 });
-const findDocuments = function (db, callback) {
-    // Get the documents collection
-    const collection = db.collection('tweets');
-    // Find some documents
-    collection.find({}).toArray( (err, docs) => {
+router.get('/', (req, res, next) => {
+    findDocuments(docs => {
+        res.json(docs)
+    });
+});
+router.post('/', (req, res, next) => {
+    postDocuments(req.body, (result) => {
+        res.json(result);
+    });
+});
+
+function postDocuments(docs, callback) {
+    db.collection('tweets')
+        .insert(docs, (err, result) => {
         assert.equal(err, null);
-        console.log("Found the following records");
+        console.log("Got following result");
+        console.log(result)
+        callback(result);
+    });
+}
+
+function findDocuments(callback) {
+    db.collection('tweets')
+        .find({}).toArray((err, docs) => {
+        assert.equal(err, null);
+        console.log("Got following docs");
         console.log(docs)
         callback(docs);
     });
 }
-router.get('/', function (req, res, next) {
-    findDocuments(db, docs => {
-        res.json(docs)
-    });
-});
 
 module.exports = router;
