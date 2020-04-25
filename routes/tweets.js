@@ -9,40 +9,37 @@ const client = new MongoClient(uri, {
     useUnifiedTopology: true
 });
 let db;
+let tweets;
 client.connect(err => {
     assert.equal(err, null);
     console.log("Connected successfully to server");
     db = client.db(dbName);
-});
-router.get('/', (req, res, next) => {
-    findDocuments(docs => {
-        res.json(docs)
-    });
-});
-router.post('/', (req, res, next) => {
-    postDocuments(req.body, (result) => {
-        res.json(result);
-    });
-});
+    tweets = db.collection('tweets');
 
-function postDocuments(docs, callback) {
-    db.collection('tweets')
-        .insert(docs, (err, result) => {
-        assert.equal(err, null);
-        console.log("Got following result");
-        console.log(result)
-        callback(result);
+    // start listen to changes
+    const changeStream = tweets.watch();
+    changeStream.on("change", function (change) {
+        console.log('got change')
+        console.log(change);
     });
-}
-
-function findDocuments(callback) {
-    db.collection('tweets')
+});
+router.get('/', (req, res) => {
+    tweets
         .find({}).toArray((err, docs) => {
         assert.equal(err, null);
-        console.log("Got following docs");
+        console.log("got docs");
         console.log(docs)
-        callback(docs);
+        res.json(docs);
     });
-}
+});
+router.post('/', (req, res) => {
+    tweets
+        .insertOne(req.body, (err, result) => {
+            assert.equal(err, null);
+            console.log("got result");
+            console.log(result)
+            res.json(result);
+        });
+});
 
 module.exports = router;
