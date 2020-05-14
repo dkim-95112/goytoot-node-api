@@ -1,50 +1,19 @@
 #!/usr/bin/env node
-
-/**
- * Module dependencies.
- */
-const app = require('../app');
-const debug = require('debug')('trymongo:server');
-const http = require('http');
-const WebSocket = require('ws');
-
-/**
- * Get port from environment and store in Express.
- */
+"use strict";
+const express = require('express');
+const appServerInit = require('../app');
+const MyMongoClient = require('../mongoclient');
+const WebSocketServer = require('../websocket');
 
 const port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
-
-/**
- * Create HTTP server.
- */
-
-const server = http.createServer(app);
-
-//initialize the WebSocket server instance
-const wss = new WebSocket.Server({server});
-wss.on('connection', (ws) => {
-    //connection is up, let's add a simple simple event
-    ws.on('message', (message) => {
-        //log the received message and send it back to the client
-        console.log('received: %s', message);
-        ws.send(JSON.stringify({
-            message: `Hello, you sent -> ${message}`
-        }));
-    });
-    //send immediatly a feedback to the incoming connection
-    ws.send(JSON.stringify({
-        message: 'Hi there, I am a WebSocket server'
-    }));
-});
-
-/**
- * Listen on provided port, on all network interfaces.
- */
-
-server.listen(port, '0.0.0.0');
-server.on('error', onError);
-server.on('listening', onListening);
+const app = express();
+const server = app.locals.server = appServerInit(app, port);
+const webSocketServer = app.locals.webSocketServer = new WebSocketServer(server);
+const mongoClient = app.locals.mongoClient = new MyMongoClient();
+mongoClient.connect()
+    .then(() => {
+        mongoClient.watchTweets(webSocketServer.nConnections);
+    })
 
 /**
  * Normalize a port into a number, string, or false.
@@ -66,42 +35,3 @@ function normalizePort(val) {
     return false;
 }
 
-/**
- * Event listener for HTTP server "error" event.
- */
-
-function onError(error) {
-    if (error.syscall !== 'listen') {
-        throw error;
-    }
-
-    const bind = typeof port === 'string'
-        ? 'Pipe ' + port
-        : 'Port ' + port;
-
-    // handle specific listen errors with friendly messages
-    switch (error.code) {
-        case 'EACCES':
-            console.error(bind + ' requires elevated privileges');
-            process.exit(1);
-            break;
-        case 'EADDRINUSE':
-            console.error(bind + ' is already in use');
-            process.exit(1);
-            break;
-        default:
-            throw error;
-    }
-}
-
-/**
- * Event listener for HTTP server "listening" event.
- */
-
-function onListening() {
-    const addr = server.address();
-    const bind = typeof addr === 'string'
-        ? 'pipe ' + addr
-        : 'port ' + addr.port;
-    debug('Listening on ' + bind);
-}
