@@ -1,19 +1,34 @@
 #!/usr/bin/env node
 "use strict";
 const express = require('express');
+const mongoose = require('mongoose');
 const appServerInit = require('../app');
-const MyMongoClient = require('../mongoclient');
+//const MyMongoClient = require('../mongoclient');
 const WebSocketServer = require('../websocket');
 
-const port = normalizePort(process.env.PORT || '3000');
+const port = normalizePort(process.env.PORT || '3001');
 const app = express();
 const server = app.locals.server = appServerInit(app, port);
-const webSocketServer = app.locals.webSocketServer = new WebSocketServer(server);
-const mongoClient = app.locals.mongoClient = new MyMongoClient();
-mongoClient.connect()
-    .then(() => {
-        mongoClient.watchTweets(webSocketServer.nConnections);
-    })
+app.locals.webSocketServer = new WebSocketServer(server);
+//const mongoClient = app.locals.mongoClient = new MyMongoClient();
+app.locals.mongoose = mongoose.connect(
+    'mongodb+srv://atlasadmin:atlasadmin@cluster0-910s3.mongodb.net/?retryWrites=true&w=majority',
+    //'mongodb://localhost/test',
+    {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+    }
+);
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+    console.log('mongoose connected');
+});
+// mongoClient.connect()
+//     .then(() => {
+//         // Todo: Should each connection observe tweets ?...i think so
+//         mongoClient.watchTweets(webSocketServer.nConnections);
+//     })
 
 /**
  * Normalize a port into a number, string, or false.

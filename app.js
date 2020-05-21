@@ -19,7 +19,8 @@ function appServerInit(
     const server = http.createServer(app);
 
     server.listen(port, '0.0.0.0');
-    server.on('error', () => {
+    server.on('error',  (error) => {
+        console.dir(arguments);
         if (error.syscall !== 'listen') {
             throw error;
         }

@@ -10,8 +10,8 @@ class WebSocketServer {
         })
         this.wss.on('connection', (ws) => {
             this.nConnections.push(ws);
-            console.log('nConnections: %i', this.nConnections);
-            //connection is up, let's add a simple simple event
+            console.log('websocket connecting: %o', this.nConnections.length);
+            // connection is up, let's add a simple simple event
             ws.on('message', (message) => {
                 //log the received message and send it back to the client
                 console.log('received: %s', message);
