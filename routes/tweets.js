@@ -4,7 +4,7 @@ const router = express.Router();
 const assert = require('assert').strict;
 const mongoose = require('mongoose');
 const tootSchema = new mongoose.Schema({
-    body_text: String
+    bodyText: String
 });
 // Todo: add methods before compiling with '.model()'
 const Toot = mongoose.model('Toot', tootSchema);
@@ -27,13 +27,14 @@ router.get('/', (req, res) => {
 router.post('/', (req, res) => {
     console.log('Inserting req body: %o', req.body);
     const newToot = new Toot({
-        body_text: req.body.body_text
+        bodyText: req.body.bodyText
     });
     newToot.save()
         .then(insertedToot => {
+            console.log('inserted toot: %o', insertedToot);
             res.status(201).json({
                 message: "Success",
-                toot: insertedToot
+                doc: insertedToot
             });
         })
         .catch(err => {
@@ -48,14 +49,13 @@ router.delete('/:id', (req, res) => {
     Toot.deleteOne({_id: req.params.id})
         .then(result => {
             if (result.n > 0) {
-                res.status(200).json({
+                return res.status(200).json({
                     message: "Success"
                 });
-            } else {
-                res.status(401).json({
-                    message: "Not authorized ?"
-                });
             }
+            res.status(401).json({
+                message: "Not authorized ?"
+            });
         })
         .catch(err => {
             console.error('Caught %o', err);

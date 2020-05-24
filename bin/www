@@ -24,16 +24,10 @@ db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
     console.log('mongoose connected');
 });
-// mongoClient.connect()
-//     .then(() => {
-//         // Todo: Should each connection observe tweets ?...i think so
-//         mongoClient.watchTweets(webSocketServer.nConnections);
-//     })
 
 /**
  * Normalize a port into a number, string, or false.
  */
-
 function normalizePort(val) {
     const port = parseInt(val, 10);
 

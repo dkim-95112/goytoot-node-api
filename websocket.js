@@ -19,6 +19,12 @@ class WebSocketServer {
                     message: `Hello, you sent -> ${message}`
                 }));
             });
+            ws.on('close', () => {
+                console.log('websocket closing: ', this.nConnections.length)
+                this.nConnections = this.nConnections.filter(
+                    ws => ws !== ws
+                )
+            })
             // send immediatly a feedback to the incoming connection
             ws.send(JSON.stringify({
                 message: 'Hi there, I am a WebSocket server'

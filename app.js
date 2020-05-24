@@ -20,7 +20,7 @@ function appServerInit(
 
     server.listen(port, '0.0.0.0');
     server.on('error',  (error) => {
-        console.dir(arguments);
+        console.error('http server: %o', error);
         if (error.syscall !== 'listen') {
             throw error;
         }
