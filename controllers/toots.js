@@ -8,7 +8,7 @@ exports.list = (req, res) => {
             docs,
         })
     }).catch(err => {
-        console.error('Caught: %o', err);
+        console.error('Finding docs caught: %o', err);
         res.status(500).json({
             message: "Failure"
         })
@@ -26,7 +26,7 @@ exports.insert = (req, res) => {
             doc: insertedToot
         });
     }).catch(err => {
-        console.error('Caught: %o', err)
+        console.error('Inserting caught: %o', err)
         res.status(500).json({
             message: "Failure"
         });
@@ -44,7 +44,7 @@ exports.delete = (req, res) => {
             message: "Not authorized ?"
         });
     }).catch(err => {
-        console.error('Caught %o', err);
+        console.error('Deleting caught %o', err);
         res.status(500).json({
             message: "Failure"
         });

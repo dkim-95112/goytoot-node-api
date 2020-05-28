@@ -52,7 +52,7 @@ exports.login = (req, res) => {
         });
     }).catch(err => {
         return res.status(500).json({
-            message: "Caught"
+            message: "Caught: " + JSON.stringify(err)
         });
     });
 }

@@ -10,11 +10,9 @@ class WebSocketServer {
             server: this.httpServer,
         })
         this.wss.on('connection', (ws) => {
+            console.log('websocket connection: %o', this.nConnections.length);
             this.nConnections.push(ws);
-            console.log('websocket connecting: %o', this.nConnections.length);
-            // connection is up, let's add a simple simple event
             ws.on('message', (message) => {
-                //log the received message and send it back to the client
                 console.log('received: %s', message);
                 ws.send(JSON.stringify({
                     message: `Hello, you sent -> ${message}`
@@ -29,7 +27,7 @@ class WebSocketServer {
             Toot.watch().on(
                 'change',
                 change => {
-                    console.log(change)
+                    console.log('toot change: %o', change);
                     ws.send(JSON.stringify(change));
                 }
             );
