@@ -55,14 +55,17 @@ function appServerInit(
     app.set('views', path.join(__dirname, 'views'));
     app.set('view engine', 'pug');
 
-    app.use(logger('dev'));
+    app.use(logger(process.env.LOGGER_FORMAT || 'dev'));
     app.use(express.json());
     app.use(express.urlencoded({extended: false}));
     app.use(cookieParser());
     app.use(express.static(path.join(__dirname, 'public')));
     app.use(cors()); // for goy twitter ui
 
-    app.use('/api', indexRouter);
+    app.use('/', indexRouter);
+    app.use('/ping', (req, res) => {
+        res.status(200).json('pong');
+    })
     app.use('/api/users', usersRouter);
     app.use('/api/toots', tootsRouter);
 

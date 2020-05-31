@@ -17,7 +17,8 @@ exports.list = (req, res) => {
 exports.insert = (req, res) => {
     console.log('Inserting req body: %o', req.body);
     const newToot = new Toot({
-        bodyText: req.body.bodyText
+        userId: req.userId, // Added by jwt check
+        bodyText: req.body.bodyText,
     });
     newToot.save().then(insertedToot => {
         console.log('Inserted toot: %o', insertedToot);
@@ -34,7 +35,10 @@ exports.insert = (req, res) => {
 }
 exports.delete = (req, res) => {
     console.log('Deleting id: %o', req.params.id);
-    Toot.deleteOne({_id: req.params.id}).then(result => {
+    Toot.deleteOne({
+        _id: req.params.id,
+        userId: req.userId, // Added by jwt check
+    }).then(result => {
         if (result.n > 0) {
             return res.status(200).json({
                 message: "Success"
