@@ -1,56 +1,58 @@
-const Toot = require('../models/toots');
-
+const debug = require('debug')('trymongo:toots:ctl');
 exports.list = (req, res) => {
+    const Toot = req.app.locals.mongooseService.getTootModel();
     Toot.find().then(docs => {
-        console.log('Found docs: %o', docs);
+        debug('Found docs: %o', docs.length);
         res.status(200).json({
-            message: "Success",
+            status: "Success",
             docs,
         })
     }).catch(err => {
-        console.error('Finding docs caught: %o', err);
+        debug('Finding docs caught: %o', err);
         res.status(500).json({
-            message: "Failure"
+            message: "Finding docs caught exception"
         })
     })
 }
 exports.insert = (req, res) => {
-    console.log('Inserting req body: %o', req.body);
+    debug('Inserting req body: %o', req.body);
+    const Toot = req.app.locals.mongooseService.getTootModel();
     const newToot = new Toot({
         userId: req.userId, // Added by jwt check
         bodyText: req.body.bodyText,
     });
     newToot.save().then(insertedToot => {
-        console.log('Inserted toot: %o', insertedToot);
+        debug('Inserted toot: %o', insertedToot);
         res.status(201).json({
-            message: "Success",
+            status: "Success",
             doc: insertedToot
         });
     }).catch(err => {
-        console.error('Inserting caught: %o', err)
+        debug('Inserting caught: %o', err)
         res.status(500).json({
-            message: "Failure"
+            message: 'Inserting caught exception'
         });
     });
 }
 exports.delete = (req, res) => {
-    console.log('Deleting id: %o', req.params.id);
+    debug('Deleting id: %o', req.params.id);
+    const Toot = req.app.locals.mongooseService.getTootModel();
     Toot.deleteOne({
         _id: req.params.id,
         userId: req.userId, // Added by jwt check
     }).then(result => {
         if (result.n > 0) {
             return res.status(200).json({
-                message: "Success"
+                status: "Success"
             });
         }
         res.status(401).json({
-            message: "Not authorized ?"
+            message: 'Zero docs deleted. Authorized ?',
         });
     }).catch(err => {
-        console.error('Deleting caught %o', err);
+        debug('Deleting caught %o', err);
         res.status(500).json({
-            message: "Failure"
+            message: 'Deleting caught exception'
         });
     });
 }

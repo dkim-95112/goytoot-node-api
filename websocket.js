@@ -1,7 +1,6 @@
 const WebSocket = require('ws');
-const Toot = require('./models/toots');
 
-class WebSocketServer {
+class WebSocketService {
     nConnections = [];
 
     constructor(httpServer) {
@@ -24,13 +23,6 @@ class WebSocketServer {
                     ws => ws !== ws
                 )
             })
-            Toot.watch().on(
-                'change',
-                change => {
-                    console.log('toot change: %o', change);
-                    ws.send(JSON.stringify(change));
-                }
-            );
             // send immediatly a feedback to the incoming connection
             ws.send(JSON.stringify({
                 message: 'Hi there, I am a WebSocket server'
@@ -39,4 +31,4 @@ class WebSocketServer {
     }
 }
 
-module.exports = WebSocketServer;
+module.exports = WebSocketService;

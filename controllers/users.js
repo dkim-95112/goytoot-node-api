@@ -1,71 +1,57 @@
+'use strict';
+const debug = require('debug')('trymongo:users:ctl');
 const bcrypt = require('bcryptjs');
-const mongoose = require('mongoose');
-const uniqueValidator = require('mongoose-unique-validator')
 const jwt = require('jsonwebtoken');
-const userSchema = new mongoose.Schema({
-    displayName: {
-        type: String,
-        required: true,
-        // unique: true, // time being allow duplicates
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    passwordHash: {
-        type: String,
-        required: true,
-    },
-});
-userSchema.plugin(uniqueValidator);
-const User = mongoose.model('User', userSchema);
 
 exports.list = (req, res, next) => {
-    console.log('get users')
-    res.send('respond with a resource');
+    debug('get users')
+    res.send('not implemented yet');
 }
 exports.login = (req, res) => {
-    console.log('login: %o', req.body);
+    debug('login: %o', req.body);
+    const User = req.app.locals.mongooseService.getUserModel();
+    let fetchedUser;
     User.findOne({email: req.body.email}).then(user => {
         if (!user) {
             return false;
         }
-        return {
-            user,
-            isPasswordVerified: bcrypt.compare(
-                req.body.password, user.password
-            ),
-        };
-    }).then(({user, isPasswordVerified}) => {
+        fetchedUser = user;
+        return bcrypt.compare( // async
+            req.body.password, user.passwordHash
+        )
+    }).then(isPasswordVerified => {
         if (!isPasswordVerified) {
-            return res.status(401).json({
-                message: "Failure"
+            return res.status(200).json({
+                status: "Failure",
+                messages: ['Invalid email/password'],
             });
         }
         const token = jwt.sign({
                 // For subsequent database insert/delete, etc.
-                userId: user._id,
+                userId: fetchedUser._id,
             },
             process.env.JWT_KEY,
             {
-                expiresIn: "1h"
+                expiresIn: "2h"
             });
         res.status(200).json({
-            userId: user._id,
-            email: user.email,
-            displayName: user.displayName,
+            status: 'Success',
+            userId: fetchedUser._id,
+            email: fetchedUser.email,
+            displayName: fetchedUser.displayName,
             token,
-            expiresInSeconds: 3600,
+            expiresInSeconds: 2 * 36000,
         });
     }).catch(err => {
+        debug('login error: %o', err.message)
         return res.status(500).json({
-            message: "Caught: " + JSON.stringify(err)
+            message: 'login caught exception'
         });
     });
 }
 exports.signup = (req, res, next) => {
-    console.log('signup: %o', req.body);
+    debug('signup: %o', req.body);
+    const User = req.app.locals.mongooseService.getUserModel();
     bcrypt.hash(req.body.password, 10).then(hash => {
         const newUser = new User({
             displayName: req.body.displayName,
@@ -75,14 +61,13 @@ exports.signup = (req, res, next) => {
         newUser.save().then(result => {
             res.status(201).json({
                 status: 'Success',
-                messages: ['User created'],
                 result
             })
         }).catch(err => {
             const messages = Object.entries(err.errors).map(
                 ([k, v]) => v.message
             );
-            console.error('signup errors:\n%o', messages);
+            debug('signup errors:\n%o', messages);
             res.status(200).json({
                 status: 'Failure',
                 messages,
@@ -104,8 +89,9 @@ exports.checkAuthHeader = (req, res, next) => {
         }
         next();
     } catch (err) {
+        debug('checkAuthHeader caught error: %o', err);
         res.status(401).json({
-            message: 'You are not authenticated!'
+            message: 'checkAuthHeader caught exception'
         });
     }
 }

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const tootSchema = new mongoose.Schema({
+module.exports = new mongoose.Schema({
     bodyText: String
 });
-module.exports = mongoose.model('Toot', tootSchema);
+// module.exports = mongoose.model('Toot', tootSchema);
