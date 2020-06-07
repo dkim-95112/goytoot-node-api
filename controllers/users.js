@@ -29,6 +29,7 @@ exports.login = (req, res) => {
         const token = jwt.sign({
                 // For subsequent database insert/delete, etc.
                 userId: fetchedUser._id,
+                displayName: fetchedUser.displayName,
             },
             process.env.JWT_KEY,
             {
@@ -39,8 +40,9 @@ exports.login = (req, res) => {
             userId: fetchedUser._id,
             email: fetchedUser.email,
             displayName: fetchedUser.displayName,
+            createDate: fetchedUser.createDate,
             token,
-            expiresInSeconds: 2 * 36000,
+            expiresInSeconds: 2 * 3600,
         });
     }).catch(err => {
         debug('login error: %o', err.message)
@@ -57,6 +59,7 @@ exports.signup = (req, res, next) => {
             displayName: req.body.displayName,
             email: req.body.email,
             passwordHash: hash,
+            createDate: (new Date).toISOString(),
         })
         newUser.save().then(result => {
             res.status(201).json({
@@ -86,6 +89,7 @@ exports.checkAuthHeader = (req, res, next) => {
         req.userData = {
             // For subsequent insert/delete, etc.
             userId: decodedToken.userId,
+            displayName: decodedToken.displayName,
         }
         next();
     } catch (err) {

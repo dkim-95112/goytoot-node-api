@@ -16,6 +16,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    createDate: {
+        type: String,
+        required: true,
+    }
 });
 userSchema.plugin(uniqueValidator);
 module.exports = userSchema;

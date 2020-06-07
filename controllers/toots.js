@@ -18,8 +18,10 @@ exports.insert = (req, res) => {
     debug('Inserting req body: %o', req.body);
     const Toot = req.app.locals.mongooseService.getTootModel();
     const newToot = new Toot({
-        userId: req.userId, // Added by jwt check
         bodyText: req.body.bodyText,
+        creator: req.userData.userId, // Added by jwt check
+        createDate: (new Date).toISOString(),
+        displayName: req.userData.displayName,
     });
     newToot.save().then(insertedToot => {
         debug('Inserted toot: %o', insertedToot);
@@ -39,7 +41,7 @@ exports.delete = (req, res) => {
     const Toot = req.app.locals.mongooseService.getTootModel();
     Toot.deleteOne({
         _id: req.params.id,
-        userId: req.userId, // Added by jwt check
+        creator: req.userData.userId, // Added by jwt check
     }).then(result => {
         if (result.n > 0) {
             return res.status(200).json({
