@@ -1,7 +1,9 @@
 'use strict';
 const mongoose = require('mongoose');
 const tootSchema = require('./models/toots');
-const userSchema = require('./models/users')
+const userSchema = require('./models/users');
+const debug = require('debug')('trymongo:mongoose');
+const info = require('debug')('trymongo:mongoose*'); // Enabling always ?
 
 class MongooseService {
     #myMongoose;
@@ -10,8 +12,10 @@ class MongooseService {
     #tootChangeStream;
 
     connect() {
+        const url = 'mongodb+srv://atlasadmin:atlasadmin@cluster0-910s3.mongodb.net/?retryWrites=true&w=majority';
+        info('Attempting to connect url: ', url)
         return mongoose.connect(
-            'mongodb+srv://atlasadmin:atlasadmin@cluster0-910s3.mongodb.net/?retryWrites=true&w=majority',
+            url,
             //'mongodb://localhost/test',
             {
                 useNewUrlParser: true,
@@ -28,7 +32,7 @@ class MongooseService {
             this.#myMongoose = myMongoose;
             const db = myMongoose.connections[0]; // Assuming only 1
             db.on('connected', function () {
-                console.log('mongoose connected');
+                info('connected');
             });
             db.on('error', console.error.bind(
                 console, 'mongoose error'
