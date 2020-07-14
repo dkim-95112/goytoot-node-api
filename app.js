@@ -56,13 +56,21 @@ function appServerInit(
   app.set('views', path.join(__dirname, 'views'));
   app.set('view engine', 'pug');
 
+  const isProduction = app.get('env') === 'production'
+  if (isProduction) {
+    // For secure cookie.  See 'express-session' docs.
+    // In AWS setup, node is behind load balancer
+    // that converts https to http node-side
+    app.set('trust proxy', 1)
+  }
   app.use(session({ // Express-side session stuff
     name: 'goytoot.sid',
     secret: 'should be session secret key',
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: app.get('env') === 'production',
+      httpOnly: true,
+      secure: isProduction,
     },
   }))
   app.use(logger(process.env.LOGGER_FORMAT || 'dev'));
@@ -71,7 +79,10 @@ function appServerInit(
   app.use(cookieParser());
   app.use(express.static(path.join(__dirname, 'public')));
   app.use(cors({
-    origin: ['http://localhost:4201'],
+    origin: [
+      'https://goytoot.com',
+      'http://localhost:4201',
+    ],
     credentials: true,
   })); // for goy twitter ui
 
