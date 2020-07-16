@@ -7,7 +7,7 @@ const {
   postsession,
   deletesession,
   signup,
-  sendmail,
+  sendResetPasswordEmail,
 } = require('../controllers/users');
 router.get('/', list);
 router.get('/session', getsession)
@@ -15,5 +15,5 @@ router.post('/session', postsession)
 router.delete('/session', deletesession)
 router.post('/login', login)
 router.post('/signup', signup)
-router.post('/sendmail', sendmail)
+router.post('/sendmail/resetpassword', sendResetPasswordEmail)
 module.exports = router;

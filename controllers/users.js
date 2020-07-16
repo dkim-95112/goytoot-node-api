@@ -1,41 +1,30 @@
 'use strict';
-const debug = require('debug')('trymongo:users:ctl');
-const log = require('debug')('trymongo:users:ctl*');
+const debug = require('debug')('trymongo:users');
+const log = require('debug')('trymongo:users*');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
+const emailController = require('./email')
 
 exports.list = (req, res, next) => {
   debug('get users')
   res.send('not implemented yet');
 }
-exports.sendmail = (req, res, next) => {
-  const transporter = nodemailer.createTransport({
-    host: 'mail.goytoot.com',
-    port: 587,
-    secure: false, // upgrade later with STARTTTLS
-    auth: {
-      user: 'dkim@goytoot.com',
-      pass: 'Welcome1',
-    },
-    dkim: {
-      domainName: 'goytoot.com',
-      keySelector: '2020',
-      privateKey: process.env.DKIM_PRIVATE_KEY,
-    },
-  });
-  const info = transporter.sendMail({
-    from: 'dkim@goytoot.com',
-    to: 'innerb@gmail.com',
-    subject: 'forgot password',
-    text: 'test'
-  }, (err, info) => {
-    if (err) {
-      console.error(err);
-    } else {
-      log(info)
+exports.sendResetPasswordEmail = (req, res, next) => {
+  const UserModel = req.app.locals.mongooseService.getUserModel();
+  const toEmail = req.body.email;
+  return UserModel.findOne({toEmail}).then(user => {
+    if(!user){
+      throw new Error(`User email (${toEmail}) not found`)
     }
-  });
+    return emailController.sendMail({
+      to: toEmail,
+      subject: 'Reset password instructions',
+      text: `Click link to reset your password.
+      <a href="https://goytoot.com/reset-password/email=${toEmail}/>
+      `,
+    });
+  }).catch(err => {
+    console.log(err)
+  })
 }
 exports.getsession = (req, res) => {
   console.log('req.session: ', req.session)
@@ -97,6 +86,7 @@ exports.login = (req, res) => {
     });
   });
 }
+
 exports.signup = (req, res, next) => {
   debug('signup: %o', req.body);
   const User = req.app.locals.mongooseService.getUserModel();

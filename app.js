@@ -1,12 +1,14 @@
 const path = require('path');
 const express = require('express');
 const logger = require('morgan');
-const debug = require('debug')('trymongo:server');
+const debug = require('debug')('trymongo:app');
 const http = require('http');
-const cookieParser = require('cookie-parser');
 const createError = require('http-errors');
 const cors = require('cors');
 const session = require('express-session');
+const MongooseService = require('./mongoose-service');
+const WebSocketService = require('./websocket');
+
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -14,11 +16,11 @@ const tootsRouter = require('./routes/toots');
 
 function appServerInit(
   app, // express app
-  port
+  port,
 ) {
   app.set('port', port);
-  const server = http.createServer(app);
-
+  // Web server
+  const server = app.locals.server = http.createServer(app);
   server.listen(port, '0.0.0.0');
   server.on('error', (error) => {
     console.error('http server: %o', error);
@@ -52,6 +54,20 @@ function appServerInit(
     debug('Listening on ' + bind);
   });
 
+  // Using websocket to push data to clients
+  const webSocketService = app.locals.webSocketService = new WebSocketService(server);
+  // Using mongo for no-sql user/toot databases
+  const mongooseService = app.locals.mongooseService = new MongooseService();
+  mongooseService.connect().then(() => {
+    mongooseService.getTootChangeStream().on('change', change => {
+      webSocketService.wss.clients.forEach(client => {
+        client.send(JSON.stringify(change));
+      })
+    })
+  }).catch(err => {
+    console.log(err)
+  })
+
   // view engine setup
   app.set('views', path.join(__dirname, 'views'));
   app.set('view engine', 'pug');
@@ -76,7 +92,6 @@ function appServerInit(
   app.use(logger(process.env.LOGGER_FORMAT || 'dev'));
   app.use(express.json());
   app.use(express.urlencoded({extended: false}));
-  app.use(cookieParser());
   app.use(express.static(path.join(__dirname, 'public')));
   app.use(cors({
     origin: [
@@ -108,7 +123,6 @@ function appServerInit(
     res.status(err.status || 500);
     res.render('error');
   });
-  return server;
 }
 
 module.exports = appServerInit;
