@@ -9,11 +9,15 @@ exports.list = (req, res, next) => {
   res.send('not implemented yet');
 }
 exports.sendResetPasswordEmail = (req, res, next) => {
-  const UserModel = req.app.locals.mongooseService.getUserModel();
+  const UserModel = req.app.locals.mongoose.model('User');
   const toEmail = req.body.email;
   return UserModel.findOne({toEmail}).then(user => {
     if(!user){
-      throw new Error(`User email (${toEmail}) not found`)
+      const msg = `User email (${toEmail}) not found`;
+      console.log(msg)
+      res.status(403).json({
+        message: msg,
+      })
     }
     return emailController.sendMail({
       to: toEmail,
@@ -23,7 +27,10 @@ exports.sendResetPasswordEmail = (req, res, next) => {
       `,
     });
   }).catch(err => {
-    console.log(err)
+    console.error(err)
+    return res.status(500).json({
+      message: 'Send reset password failed',
+    })
   })
 }
 exports.getsession = (req, res) => {
@@ -53,7 +60,7 @@ exports.deletesession = (req, res) => {
 }
 exports.login = (req, res) => {
   debug('login: %o', req.body);
-  const User = req.app.locals.mongooseService.getUserModel();
+  const User = req.app.locals.mongoose.model('User');
   let fetchedUser;
   User.findOne({email: req.body.email}).then(user => {
     if (!user) {
@@ -89,7 +96,7 @@ exports.login = (req, res) => {
 
 exports.signup = (req, res, next) => {
   debug('signup: %o', req.body);
-  const User = req.app.locals.mongooseService.getUserModel();
+  const User = req.app.locals.mongoose.model('User');
   bcrypt.hash(req.body.password, 10).then(hash => {
     const newUser = new User({
       displayName: req.body.displayName,

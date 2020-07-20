@@ -6,7 +6,7 @@ const http = require('http');
 const createError = require('http-errors');
 const cors = require('cors');
 const session = require('express-session');
-const MongooseService = require('./mongoose-service');
+const mongooseFactory = require('./mongoose-factory');
 const WebSocketService = require('./websocket');
 
 
@@ -14,7 +14,7 @@ const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const tootsRouter = require('./routes/toots');
 
-function appServerInit(
+async function appServerInit(
   app, // express app
   port,
 ) {
@@ -54,20 +54,17 @@ function appServerInit(
     debug('Listening on ' + bind);
   });
 
-  // Using websocket to push data to clients
-  const webSocketService = app.locals.webSocketService = new WebSocketService(server);
-  // Using mongo for no-sql user/toot databases
-  const mongooseService = app.locals.mongooseService = new MongooseService();
-  mongooseService.connect().then(() => {
-    mongooseService.getTootChangeStream().on('change', change => {
-      webSocketService.wss.clients.forEach(client => {
+  // Storing users/toots in mongodb
+  app.locals.webSocketService = new WebSocketService(server)
+  app.locals.mongoose = await mongooseFactory().then((mongoose) => {
+    mongoose._tootWatch.on('change', change => {
+      // Broadcasting mongo change events to all client websockets
+      app.locals.webSocketService.wss.clients.forEach(client => {
         client.send(JSON.stringify(change));
       })
     })
-  }).catch(err => {
-    console.log(err)
+    return mongoose;
   })
-
   // view engine setup
   app.set('views', path.join(__dirname, 'views'));
   app.set('view engine', 'pug');

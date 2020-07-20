@@ -1,6 +1,6 @@
 const debug = require('debug')('trymongo:toots:ctl');
 exports.list = (req, res) => {
-    const Toot = req.app.locals.mongooseService.getTootModel();
+    const Toot = req.app.locals.mongoose.model('Toot');
     Toot.find().then(docs => {
         debug('Found docs: %o', docs.length);
         res.status(200).json({
@@ -16,7 +16,7 @@ exports.list = (req, res) => {
 }
 exports.insert = (req, res) => {
     debug('Inserting req body: %o', req.body);
-    const Toot = req.app.locals.mongooseService.getTootModel();
+    const Toot = req.app.locals.mongoose.model('Toot');
     const newToot = new Toot({
         bodyText: req.body.bodyText,
         creator: req.session.userId,
@@ -38,7 +38,7 @@ exports.insert = (req, res) => {
 }
 exports.delete = (req, res) => {
     debug('Deleting id: %o', req.params.id);
-    const Toot = req.app.locals.mongooseService.getTootModel();
+    const Toot = req.app.locals.mongoose.model('Toot');
     Toot.deleteOne({
         _id: req.params.id,
         creator: req.session.userId,
