@@ -1,6 +1,8 @@
+"use strict";
 const mongoose = require('mongoose');
 const tootSchema = require('./models/toots');
 const userSchema = require('./models/users');
+const resetPasswordTokenSchema = require('./models/reset-password-token');
 const debug = require('debug')('trymongo:mongoose');
 const info = require('debug')('trymongo:mongoose*'); // Enabling always ?
 
@@ -10,7 +12,7 @@ function mongooseFactory(
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true, // Avoids some deprecation warnings ?
-    //useFindAndModify: false,
+    useFindAndModify: false,
     //autoIndex: false, // Don't build indexes
     poolSize: 5, // 10, // Maintain up to 10 socket connections
     //serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
@@ -50,6 +52,7 @@ function mongooseFactory(
     // Setting up before connecting now
     db.model('User', userSchema)
     db.model('Toot', tootSchema);
+    db.model('ResetPasswordToken', resetPasswordTokenSchema);
     // Watching toots and pushing changes to clients
     const tw = mongoose._tootWatch = db.model('Toot').watch();
     tw.on('change', function (change) {

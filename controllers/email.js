@@ -2,45 +2,46 @@ const nodemailer = require('nodemailer');
 const debug = require('debug')('trymongo:email')
 
 class EmailController {
-  #mail_host = 'mail.goytoot.com';
-  #mail_port = 587;
-  #dkim_domain_name = 'goytoot.com';
-  #dkim_key_selector = '2020';
+  #transport_options = {
+    // General
+    host: 'mail.goytoot.com',
+    port: 587,
+    auth: {
+      user: 'dkim@goytoot.com',
+      pass: 'Welcome1',
+    },
+    // TLS
+    secure: false, // upgrade later with STARTTTLS
+    dkim: {
+      domainName: 'goytoot.com',
+      keySelector: '2020',
+      privateKey: process.env.DKIM_PRIVATE_KEY,
+    },
+  }
 
   sendMail(
     toEmail,
     subject,
-    text = 'empty text', html = '',
-    // Now using same 'from' & 'email user account'
-    fromUserEmail = 'dkim@goytoot.com',
-    fromPassword = 'Welcome1',
+    // Gmail is bouncing mails (siting DMARC policy), if I don't
+    // put similar stuff (like link info) in both html and text
+    html = 'empty html',
+    text = 'empty text',
+    fromEmail = 'dkim@goytoot.com',
   ) {
-    const transporter = nodemailer.createTransport({
-      host: this.#mail_host,
-      port: this.#mail_port,
-      secure: false, // upgrade later with STARTTTLS
-      auth: {
-        user: fromUserEmail,
-        pass: fromPassword,
-      },
-      dkim: {
-        domainName: this.#dkim_domain_name,
-        keySelector: this.#dkim_key_selector,
-        privateKey: process.env.DKIM_PRIVATE_KEY,
-      },
-    });
-
+    const transporter = nodemailer.createTransport(this.#transport_options);
     return transporter.sendMail({
-      from: fromUserEmail,
+      from: fromEmail,
       to: toEmail,
       subject,
-      text, html,
+      html,
     }).then(info => {
       debug(info);
+      return info;
     }).catch(err => {
       console.error(err);
+      throw new Error(err);
     });
   }
 }
 
-module.exports = EmailController;
+module.exports = new EmailController();
