@@ -71,7 +71,6 @@ exports.sendForgotPasswordEmail = async (req, res, next) => {
     `Click the link to reset your password: 
     https://goytoot.com/reset-password`,
   ).then(async (info) => {
-    debug(info);
     const ResetPasswordToken = req.app.locals.mongoose
       .model('ResetPasswordToken');
     await ResetPasswordToken.create({
@@ -115,7 +114,6 @@ exports.deletesession = (req, res) => {
   })
 }
 exports.login = async (req, res) => {
-  debug('login: %o', req.body);
   const User = req.app.locals.mongoose.model('User');
   let fetchedUser;
   const isUserValidated = await User.findOne({

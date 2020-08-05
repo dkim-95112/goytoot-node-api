@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const tootSchema = require('./models/toots');
 const userSchema = require('./models/users');
 const resetPasswordTokenSchema = require('./models/reset-password-token');
-const debug = require('debug')('trymongo:mongoose');
-const info = require('debug')('trymongo:mongoose*'); // Enabling always ?
+const debug = require('debug')('trymongo:mongoose.debug');
+const info = require('debug')('trymongo:mongoose.info'); // Enabling always ?
 
 function mongooseFactory(
   url = 'mongodb+srv://atlasadmin:atlasadmin@cluster0-910s3.mongodb.net/?retryWrites=true&w=majority',
