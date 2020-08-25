@@ -2,12 +2,18 @@
 "use strict";
 require('dotenv').config() // Has to be first, otherwise 'debug' package doesn't print
 const fs = require('fs');
-fs.readFile(process.env.DKIM_PRIVATE_KEY_PATH, (err, data) => {
-  if (err) {
-    throw err;
-  }
-  process.env.DKIM_PRIVATE_KEY = data;
-})
+try {
+  fs.readFile(process.env.DKIM_PRIVATE_KEY_PATH, (err, data) => {
+    if (err) {
+      throw err;
+    }
+    process.env.DKIM_PRIVATE_KEY = data;
+  })
+} catch (e) {
+  console.error('Check DKIM_PRIVATE_KEY env variable. Still sorting this out.')
+  throw e;
+}
+
 const express = require('express');
 const appServerInit = require('../app');
 

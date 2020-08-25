@@ -9,7 +9,7 @@ const {
   signup,
   sendForgotPasswordEmail,
   resetPassword,
-} = require('../controllers/users');
+} = require('../controllers/user');
 router.get('/', list);
 router.get('/session', getsession)
 router.post('/session', postsession)

@@ -1,6 +1,6 @@
 const path = require('path');
 const express = require('express');
-const logger = require('morgan');
+const morganLogger = require('morgan');
 const debug = require('debug')('trymongo:app');
 const http = require('http');
 const createError = require('http-errors');
@@ -11,8 +11,8 @@ const WebSocketService = require('./websocket');
 
 
 const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
-const tootsRouter = require('./routes/toots');
+const userRouter = require('./routes/user');
+const tootRouter = require('./routes/toot');
 
 async function appServerInit(
   app, // express app
@@ -86,7 +86,7 @@ async function appServerInit(
       secure: isProduction,
     },
   }))
-  app.use(logger(process.env.LOGGER_FORMAT || 'dev'));
+  app.use(morganLogger(process.env.LOGGER_FORMAT || 'dev'));
   app.use(express.json());
   app.use(express.urlencoded({extended: false}));
   app.use(express.static(path.join(__dirname, 'public')));
@@ -102,8 +102,8 @@ async function appServerInit(
   app.use('/ping', (req, res) => {
     res.status(200).json('pong');
   })
-  app.use('/api/users', usersRouter);
-  app.use('/api/toots', tootsRouter);
+  app.use('/api/user', userRouter);
+  app.use('/api/toot', tootRouter);
 
   // catch 404 and forward to error handler
   app.use(function (req, res, next) {

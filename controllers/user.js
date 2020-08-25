@@ -128,7 +128,7 @@ exports.login = async (req, res) => {
     )
   })
   if (!isUserValidated) {
-    return res.status(401).json({
+    return res.status(200).json({
       status: 'Failure',
       message: 'Invalid email/password',
     })
