@@ -174,6 +174,7 @@ exports.checkLogin = (req, res, next) => {
   if (req.session && req.session.userId) {
     next()
   } else {
+    debug('req.session', req.session)
     res.status(401).json({
       message: 'User not logged in'
     })

@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 const debug = require('debug')('trymongo:email.debug')
-debug(process.env.DKIM_PRIVATE_KEY)
+//debug('dkim_private_key', process.env.DKIM_PRIVATE_KEY)
 class EmailController {
   #transport_options = {
     // General

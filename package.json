@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "bundle": "zip -r bundle.zip bin controllers keys models public routes views *.js package*.json"
-    "deploy": "eb deploy --staged"
+    "build:decrypt": "./decrypt_secret.sh",
+    "build:bundle": "zip -r bundle.zip bin controllers keys/*.pem models public routes views *.js package*.json",
+    "deploy:staged": "eb deploy --staged",
+    "encrypt:example": "gpg --symmetric --cipher-algo AES256 ./keys/my_secret.json"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

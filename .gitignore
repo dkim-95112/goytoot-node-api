@@ -4,6 +4,8 @@ npm-debug.log
 .env
 .DS_Store
 
+keys/dkim_private_key.pem
+bundle.zip
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml

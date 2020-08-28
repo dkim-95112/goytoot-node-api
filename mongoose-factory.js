@@ -7,7 +7,7 @@ const debug = require('debug')('trymongo:mongoose.debug');
 const info = require('debug')('trymongo:mongoose.info'); // Enabling always ?
 
 function mongooseFactory(
-  url = 'mongodb+srv://atlasadmin:atlasadmin@cluster0-910s3.mongodb.net/?retryWrites=true&w=majority',
+  url = 'mongodb+srv://atlasadmin:atlasadmin@cluster0-910s3.mongodb.net/test?retryWrites=true&w=majority',
   options = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
